@@ -102,7 +102,7 @@ def config_options():
     cat_list = ["ALL"] + [cat.CATEGORY for cat in categories]
 
     # Category selection
-    st.sidebar.selectbox("Select what products you are looking for", cat_list, key="category_value")
+    st.sidebar.selectbox("Select what category you are looking for", cat_list, key="category_value")
 
     # Display session state for debugging
     st.sidebar.expander("Session State").write(st.session_state)
