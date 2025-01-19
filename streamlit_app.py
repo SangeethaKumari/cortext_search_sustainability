@@ -6,6 +6,10 @@ import json
 # Configure pandas to display all content in cells
 pd.set_option("max_colwidth", None)
 
+# Load Snowflake connection parameters from config.json
+
+with open("config/config.json", "r") as f:
+    config = json.load(f)
 # Constants
 NUM_CHUNKS = 3  # Number of chunks for context
 CORTEX_SEARCH_TABLE = "docs_chunks_table"  # Name of the table
