@@ -1,0 +1,10 @@
+{
+    "SNOWFLAKE_ACCOUNT": "kcb11849",
+    "SNOWFLAKE_USER": "SANGEETHAGSK",
+    "SNOWFLAKE_PASSWORD": "Learning_21",
+    "SNOWFLAKE_ROLE": "SYSADMIN",
+    "SNOWFLAKE_WAREHOUSE": "cortex_analyst_sustainablity_wh", 
+    "SNOWFLAKE_DATABASE": "cortex_analyst_sustainablity",
+    "SNOWFLAKE_SCHEMA": "data"
+  }
+  
