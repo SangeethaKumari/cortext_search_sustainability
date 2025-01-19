@@ -3,6 +3,49 @@ from snowflake.snowpark import Session  # Import Snowflake Snowpark
 import pandas as pd
 import json
 
+# Display App Title and Description
+st.title(":green_heart: Chat Document Assistant on Sustainability")
+st.markdown("""
+This app helps you explore and answer sustainability-related questions based on uploaded documents.
+Ask questions about topics like recycling, circular economy, infrastructure resilience, and more!
+""")
+
+# Add a section to list sample questions
+st.subheader("Sample Questions You Can Ask:")
+with st.expander("Click here to see example questions"):
+    st.markdown("""
+    **WWF Report 2024:**
+    - What steps is WWF taking to address food waste and its environmental impact?
+    - How has the Wildlife Adaptation Innovation Fund supported wildlife conservation?
+    - What progress has WWF made in managing global grasslands?
+
+    **EPA Circular Economy Progress Report 2022:**
+    - What actions are outlined in the National Recycling Strategy to modernize the U.S. recycling system?
+    - How does the Save Our Seas 2.0 Act aim to address plastic waste issues?
+    - What initiatives has the EPA introduced to promote a circular economy for all?
+
+    **EPA Sustainability Report and Implementation Plan 2020:**
+    - What energy efficiency improvements have EPA facilities achieved since FY 2003?
+    - How has the EPA reduced its water intensity over recent years?
+    - What strategies has the EPA implemented to manage non-hazardous waste effectively?
+
+    **Sustainable and Resilient Infrastructure Report:**
+    - How does sustainable infrastructure align with the UN's Sustainable Development Goals?
+    - What are the key principles for sustainable infrastructure development mentioned in the UNEP report?
+    - How does natural infrastructure contribute to ecosystem restoration and resilience?
+    """)
+
+# Placeholder for user input
+st.subheader("Ask Your Sustainability Question Below:")
+question = st.text_input("Enter your question:", placeholder="e.g., What is the EPA's strategy for managing food waste?")
+
+# Add a line to clarify that the app focuses on sustainability-related questions
+st.sidebar.title(":seedling: About This App")
+st.sidebar.markdown("""
+This app specializes in answering sustainability-related questions based on uploaded documents.
+It covers topics like climate change, recycling, sustainable development, and environmental conservation.
+""")
+
 # Configure pandas to display all content in cells
 pd.set_option("max_colwidth", None)
 
