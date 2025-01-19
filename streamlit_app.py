@@ -10,13 +10,13 @@ pd.set_option("max_colwidth", None)
 NUM_CHUNKS = 3  # Number of chunks for context
 CORTEX_SEARCH_TABLE = "docs_chunks_table"  # Name of the table
 CONNECTION_PARAMS = {
-    "account": "<your_account>",
-    "user": "<your_user>",
-    "password": "<your_password>",
-    "role": "SYSADMIN",
-    "warehouse": "cortex_analyst_sustainablity_wh",
-    "database": "CORTEX_ANALYST_SUSTAINABLITY",
-    "schema": "DATA",
+    "account": config["SNOWFLAKE_ACCOUNT"],
+    "user": config["SNOWFLAKE_USER"],
+    "password": config["SNOWFLAKE_PASSWORD"],
+    "role": config["SNOWFLAKE_ROLE"],
+    "warehouse": config["SNOWFLAKE_WAREHOUSE"],
+    "database": config["SNOWFLAKE_DATABASE"],
+    "schema": config["SNOWFLAKE_SCHEMA"],
 }
 
 # Establish Snowflake session
