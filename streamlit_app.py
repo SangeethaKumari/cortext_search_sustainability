@@ -49,21 +49,18 @@ It covers topics like climate change, recycling, sustainable development, and en
 # Configure pandas to display all content in cells
 pd.set_option("max_colwidth", None)
 
-# Load Snowflake connection parameters from config.json
 
-with open("config/config.json", "r") as f:
-    config = json.load(f)
 # Constants
 NUM_CHUNKS = 3  # Number of chunks for context
 CORTEX_SEARCH_TABLE = "docs_chunks_table"  # Name of the table
-CONNECTION_PARAMS = {
-    "account": config["SNOWFLAKE_ACCOUNT"],
-    "user": config["SNOWFLAKE_USER"],
-    "password": config["SNOWFLAKE_PASSWORD"],
-    "role": config["SNOWFLAKE_ROLE"],
-    "warehouse": config["SNOWFLAKE_WAREHOUSE"],
-    "database": config["SNOWFLAKE_DATABASE"],
-    "schema": config["SNOWFLAKE_SCHEMA"],
+connection_params = {
+    "account": st.secrets["SNOWFLAKE_ACCOUNT"],
+    "user": st.secrets["SNOWFLAKE_USER"],
+    "password": st.secrets["SNOWFLAKE_PASSWORD"],
+    "role": st.secrets["SNOWFLAKE_ROLE"],
+    "warehouse": st.secrets["SNOWFLAKE_WAREHOUSE"],
+    "database": st.secrets["SNOWFLAKE_DATABASE"],
+    "schema": st.secrets["SNOWFLAKE_SCHEMA"],
 }
 
 # Establish Snowflake session
