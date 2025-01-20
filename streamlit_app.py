@@ -3,6 +3,33 @@ from snowflake.snowpark import Session  # Import Snowflake Snowpark
 import pandas as pd
 import json
 
+
+# Add custom CSS for the background image
+st.markdown(
+    """
+    <style>
+    body {
+        background-color: #d4f1c5;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+
+    /* Optional: Styling for the text to make it more readable */
+    .stApp {
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 10px;
+        padding: 15px;
+        margin: auto;
+        max-width: 1000px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
 # Display App Title and Description
 st.title(":green_heart: Chat Document Assistant on Sustainability")
 st.markdown("""
