@@ -64,7 +64,7 @@ connection_params = {
 }
 
 # Establish Snowflake session
-session = Session.builder.configs(CONNECTION_PARAMS).create()
+session = Session.builder.configs(connection_params).create()
 
 
 ### Functions
