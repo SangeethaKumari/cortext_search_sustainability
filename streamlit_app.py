@@ -1,5 +1,8 @@
-import streamlit as st  # Import Streamlit
-from snowflake.snowpark import Session  # Import Snowflake Snowpark
+import streamlit as st # Import python packages
+from snowflake.snowpark.context import get_active_session
+
+from snowflake.core import Root
+
 import pandas as pd
 import json
 
@@ -9,7 +12,7 @@ st.markdown(
     """
     <style>
     body {
-        background-color: #d4f1c5;
+        background-color: #ADD8E6;
         background-size: cover;
         background-repeat: no-repeat;
         background-attachment: fixed;
@@ -31,153 +34,112 @@ st.markdown(
 
 
 # Display App Title and Description
-st.title(":green_heart: Chat Document Assistant on Sustainability")
+st.title(":airplane: Immigration Rules Assistant ")
 st.markdown("""
-This app helps you explore and answer sustainability-related questions based on uploaded documents.
-Ask questions about topics like recycling, circular economy, infrastructure resilience, and more!
+This app helps you explore and answer immigration-related questions based on uploaded documents.
+Ask questions about topics like different types of visa, how to obtain the visa, documents to fill and more!!
 """)
 
 # Add a section to list sample questions
 st.subheader("Sample Questions You Can Ask:")
 with st.expander("Click here to see example questions"):
     st.markdown("""
-    **WWF Report 2024:**
-    - What steps is WWF taking to address food waste and its environmental impact?
-    - How has the Wildlife Adaptation Innovation Fund supported wildlife conservation?
-    - What progress has WWF made in managing global grasslands?
+    **Visa Types**
+    - L1
+    - H1
+    - F1
 
-    **EPA Circular Economy Progress Report 2022:**
-    - What actions are outlined in the National Recycling Strategy to modernize the U.S. recycling system?
-    - How does the Save Our Seas 2.0 Act aim to address plastic waste issues?
-    - What initiatives has the EPA introduced to promote a circular economy for all?
-
-    **EPA Sustainability Report and Implementation Plan 2020:**
-    - What energy efficiency improvements have EPA facilities achieved since FY 2003?
-    - How has the EPA reduced its water intensity over recent years?
-    - What strategies has the EPA implemented to manage non-hazardous waste effectively?
-
-    **Sustainable and Resilient Infrastructure Report:**
-    - How does sustainable infrastructure align with the UN's Sustainable Development Goals?
-    - What are the key principles for sustainable infrastructure development mentioned in the UNEP report?
-    - How does natural infrastructure contribute to ecosystem restoration and resilience?
+    **H1**
+    - How to get L1 visa?
     """)
 
 # Placeholder for user input
-st.subheader("Ask Your Sustainability Question Below:")
-question = st.text_input("Enter your question:", placeholder="e.g., What is the EPA's strategy for managing food waste?")
+st.subheader("Ask Your Immigration Question Below:")
+question = st.text_input("Enter your question:", placeholder="e.g.,How to get the H1 visa")
 
-# Add a line to clarify that the app focuses on sustainability-related questions
-st.sidebar.title(":seedling: About This App")
+# Add a line to clarify that the app focuses on immigration-related questions
+st.sidebar.title(":passport_control: About This App")
 st.sidebar.markdown("""
-This app specializes in answering sustainability-related questions based on uploaded documents.
-It covers topics like climate change, recycling, sustainable development, and environmental conservation.
+This app specializes in answering immigration-related questions based on uploaded documents.
+It covers different types of visa, how to obtain the visa, documents to fill and more.
 """)
+pd.set_option("max_colwidth",None)
 
-# Configure pandas to display all content in cells
-pd.set_option("max_colwidth", None)
+### Default Values
+NUM_CHUNKS = 3 # Num-chunks provided as context. Play with this to check how it affects your accuracy
 
+# service parameters
+CORTEX_SEARCH_DATABASE = "cortex_analyst_immigration_rules"
+CORTEX_SEARCH_SCHEMA = "DATA"
+CORTEX_SEARCH_SERVICE = "CC_SEARCH_SERVICE_CS"
+######
+######
 
-# Constants
-NUM_CHUNKS = 3  # Number of chunks for context
-CORTEX_SEARCH_TABLE = "docs_chunks_table"  # Name of the table
-connection_params = {
-    "account": st.secrets["SNOWFLAKE_ACCOUNT"],
-    "user": st.secrets["SNOWFLAKE_USER"],
-    "password": st.secrets["SNOWFLAKE_PASSWORD"],
-    "role": st.secrets["SNOWFLAKE_ROLE"],
-    "warehouse": st.secrets["SNOWFLAKE_WAREHOUSE"],
-    "database": st.secrets["SNOWFLAKE_DATABASE"],
-    "schema": st.secrets["SNOWFLAKE_SCHEMA"],
-}
+# columns to query in the service
+COLUMNS = [
+    "chunk",
+    "relative_path",
+    "category"
+]
 
-# Establish Snowflake session
-session = Session.builder.configs(connection_params).create()
+session = get_active_session()
+root = Root(session)                         
 
-
+svc = root.databases[CORTEX_SEARCH_DATABASE].schemas[CORTEX_SEARCH_SCHEMA].cortex_search_services[CORTEX_SEARCH_SERVICE]
+   
 ### Functions
-
-def list_documents():
-    """Fetch the list of unique documents."""
-    docs = session.sql(f"SELECT DISTINCT relative_path FROM {CORTEX_SEARCH_TABLE}").collect()
-    return [doc.RELATIVE_PATH for doc in docs]
-
-
+     
 def config_options():
-    """Configure sidebar options."""
-    # Model selection
-    st.sidebar.selectbox(
-        "Select your model:",
-        (
-            "mixtral-8x7b",
-            "snowflake-arctic",
-            "mistral-large",
-            "llama3-8b",
-            "llama3-70b",
-            "reka-flash",
-            "mistral-7b",
-            "llama2-70b-chat",
-            "gemma-7b",
-        ),
-        key="model_name",
-    )
 
-    # Fetch categories
-    categories = session.sql(f"SELECT DISTINCT category FROM {CORTEX_SEARCH_TABLE}").collect()
-    cat_list = ["ALL"] + [cat.CATEGORY for cat in categories]
+    st.sidebar.selectbox('Select your model:',(
+                                    'mixtral-8x7b',
+                                    'snowflake-arctic',
+                                    'mistral-large',
+                                    'llama3-8b',
+                                    'llama3-70b',
+                                    'reka-flash',
+                                     'mistral-7b',
+                                     'llama2-70b-chat',
+                                     'gemma-7b'), key="model_name")
 
-    # Category selection
-    st.sidebar.selectbox("Select what category you are looking for", cat_list, key="category_value")
+    categories = session.sql("select category from CORTEX_ANALYST_IMMIGRATION_RULES.DATA.docs_chunks_table group by category").collect()
 
-    # Display session state for debugging
+    cat_list = ['ALL']
+    for cat in categories:
+        cat_list.append(cat.CATEGORY)
+            
+    st.sidebar.selectbox('Select what category you are looking for', cat_list, key = "category_value")
+
     st.sidebar.expander("Session State").write(st.session_state)
 
-
 def get_similar_chunks_search_service(query):
-    """Fetch similar chunks based on the query."""
-    category = st.session_state.get("category_value", "ALL")
-    num_chunks = NUM_CHUNKS
 
-    # Formulate the query
-    if category == "ALL":
-        sql_query = f"""
-            SELECT chunk, relative_path, category
-            FROM {CORTEX_SEARCH_TABLE}
-            WHERE chunk ILIKE '%{query}%'
-            LIMIT {num_chunks}
-        """
-    else:
-        sql_query = f"""
-            SELECT chunk, relative_path, category
-            FROM {CORTEX_SEARCH_TABLE}
-            WHERE chunk ILIKE '%{query}%'
-              AND category = '{category}'
-            LIMIT {num_chunks}
-        """
+    if st.session_state.category_value == "ALL":
+        response = svc.search(query, COLUMNS, limit=NUM_CHUNKS)
+    else: 
+        filter_obj = {"@eq": {"category": st.session_state.category_value} }
+        response = svc.search(query, COLUMNS, filter=filter_obj, limit=NUM_CHUNKS)
 
-    # Execute the query
-    results = session.sql(sql_query).collect()
-    response = {
-        "results": [{"chunk": row.CHUNK, "relative_path": row.RELATIVE_PATH, "category": row.CATEGORY} for row in results]
-    }
+    st.sidebar.json(response.json())
+  
 
-    # Display response in sidebar
-    st.sidebar.json(response)
-    return response
+    
+    return response.json()  
+
+def create_prompt (myquestion):
+    prompt_context = get_similar_chunks_search_service(myquestion)
 
 
-def create_prompt(myquestion):
-    """Create a prompt based on the question."""
-    if st.session_state.rag == 1:
-        prompt_context = get_similar_chunks_search_service(myquestion)
-
-        prompt = f"""
-           You are an expert assistant that extracts information from the CONTEXT provided
+    prompt = f"""
+           You are an expert chat assistance that extracs information from the CONTEXT provided
            between <context> and </context> tags.
-           When answering the question contained between <question> and </question> tags,
+           When ansering the question contained between <question> and </question> tags
            be concise and do not hallucinate. 
-           If you don’t have the information, just say so.
-           Only answer the question if you can extract it from the CONTEXT provided.
+           If you don´t have the information just say so.
+           Only anwer the question if you can extract it from the CONTEXT provideed.
            
+           Do not mention the CONTEXT used in your answer.
+    
            <context>          
            {prompt_context}
            </context>
@@ -186,61 +148,59 @@ def create_prompt(myquestion):
            </question>
            Answer: 
            """
+    json_data = json.loads(prompt_context)
 
-        relative_paths = {item["relative_path"] for item in prompt_context["results"]}
-    else:
-        prompt = f"Question: {myquestion} Answer: "
-        relative_paths = "None"
-
+    relative_paths = set(item['relative_path'] for item in json_data['results'])
+        
+    
+            
     return prompt, relative_paths
 
-
 def complete(myquestion):
-    """Send the prompt to the AI model."""
-    prompt, relative_paths = create_prompt(myquestion)
 
+    prompt, relative_paths  =create_prompt (myquestion)
+   # st.write(prompt)
+   # print("Printing the entire prompt:", prompt.encode('ascii', errors='replace').decode('ascii'))
     cmd = """
-        SELECT snowflake.cortex.complete(?, ?) AS response
-    """
+            select snowflake.cortex.complete(?, ?) as response
+          """
+    
     df_response = session.sql(cmd, params=[st.session_state.model_name, prompt]).collect()
-    return df_response, relative_paths
-
-
-### Main Function
+    return df_response, relative_paths 
 
 def main():
-    st.title(":speech_balloon: Chat Document Assistant with Snowflake Cortex")
+    
+    st.title(f":speech_balloon: Immigration Rules Assistant with Snowflake Cortex Search")
     st.write("This is the list of documents you already have and that will be used to answer your questions:")
+   # docs_available = session.sql("ls @docs").collect()
+    docs_available = session.sql("ls @CORTEX_ANALYST_IMMIGRATION_RULES.DATA.DOCS").collect()
 
-    # List available documents
-    docs_available = list_documents()
-    if not docs_available:
-        st.write("No documents found in the database.")
-    else:
-        st.dataframe(docs_available)
+    list_docs = []
+    for doc in docs_available:
+        list_docs.append(doc["name"])
+    st.dataframe(list_docs)
 
-    # Sidebar configurations
     config_options()
 
-    # Checkbox for using custom documents
-    st.session_state.rag = st.sidebar.checkbox("Use your own documents as context?")
+    st.session_state.rag = st.sidebar.checkbox('Use your own documents as context?')
 
-    # Input for user question
-    question = st.text_input("Enter question", placeholder="What is the major cause of pollution?", label_visibility="collapsed")
+    question = st.text_input("Enter question", placeholder="What is the types of visa?", label_visibility="collapsed")
 
-    # If question is entered, process it
     if question:
         response, relative_paths = complete(question)
         res_text = response[0].RESPONSE
         st.markdown(res_text)
+        #st.markdown(prompt_context)
 
-        # Show related documents in the sidebar
         if relative_paths != "None":
             with st.sidebar.expander("Related Documents"):
                 for path in relative_paths:
-                    st.sidebar.markdown(f"Document: {path}")
-
-
-# Run the app
+                    cmd2 = f"select GET_PRESIGNED_URL(@CORTEX_ANALYST_IMMIGRATION_RULES.DATA.DOCS, '{path}', 360) as URL_LINK from directory(@docs)"
+                    df_url_link = session.sql(cmd2).to_pandas()
+                    url_link = df_url_link._get_value(0,'URL_LINK')
+        
+                    display_url = f"Doc: [{path}]({url_link})"
+                    st.sidebar.markdown(display_url)
+                
 if __name__ == "__main__":
     main()
